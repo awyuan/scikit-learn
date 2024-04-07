@@ -109,6 +109,7 @@ cdef class Splitter(BaseSplitter):
     #   +1: monotonic increase
     cdef const int8_t[:] monotonic_cst
     cdef bint with_monotonic_cst
+    cdef intp_t pos_leaf_sum
 
     cdef int init(
         self,

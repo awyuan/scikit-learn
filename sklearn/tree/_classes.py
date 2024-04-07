@@ -129,6 +129,7 @@ class BaseDecisionTree(MultiOutputMixin, BaseEstimator, metaclass=ABCMeta):
         "ccp_alpha": [Interval(Real, 0.0, None, closed="left")],
         "store_leaf_values": ["boolean"],
         "monotonic_cst": ["array-like", None],
+        "pos_leaf_sum": [Interval(Integral, 1, None, closed="left"), None],
     }
 
     @abstractmethod
@@ -149,6 +150,7 @@ class BaseDecisionTree(MultiOutputMixin, BaseEstimator, metaclass=ABCMeta):
         ccp_alpha=0.0,
         store_leaf_values=False,
         monotonic_cst=None,
+        pos_leaf_sum=None,
     ):
         self.criterion = criterion
         self.splitter = splitter
@@ -164,6 +166,7 @@ class BaseDecisionTree(MultiOutputMixin, BaseEstimator, metaclass=ABCMeta):
         self.ccp_alpha = ccp_alpha
         self.store_leaf_values = store_leaf_values
         self.monotonic_cst = monotonic_cst
+        self.pos_leaf_sum = pos_leaf_sum
 
     def get_depth(self):
         """Return the depth of the decision tree.
@@ -412,6 +415,11 @@ class BaseDecisionTree(MultiOutputMixin, BaseEstimator, metaclass=ABCMeta):
         else:
             min_weight_leaf = self.min_weight_fraction_leaf * np.sum(sample_weight)
 
+        if self.pos_leaf_sum is not None:
+            pos_leaf_sum = self.pos_leaf_sum
+        else:
+            pos_leaf_sum = np.iinfo(np.int32).max
+
         # build the actual tree now with the parameters
         self = self._build_tree(
             X=X,
@@ -424,6 +432,7 @@ class BaseDecisionTree(MultiOutputMixin, BaseEstimator, metaclass=ABCMeta):
             min_samples_split=min_samples_split,
             max_depth=max_depth,
             random_state=random_state,
+            pos_leaf_sum=pos_leaf_sum,
         )
 
         return self
@@ -440,6 +449,7 @@ class BaseDecisionTree(MultiOutputMixin, BaseEstimator, metaclass=ABCMeta):
         min_samples_split,
         max_depth,
         random_state,
+        pos_leaf_sum,
     ):
         """Build the actual tree.
 
@@ -530,6 +540,7 @@ class BaseDecisionTree(MultiOutputMixin, BaseEstimator, metaclass=ABCMeta):
                 min_weight_leaf,
                 random_state,
                 monotonic_cst,
+                pos_leaf_sum,
             )
 
         if is_classifier(self):
@@ -1205,6 +1216,7 @@ class DecisionTreeClassifier(ClassifierMixin, BaseDecisionTree):
         ccp_alpha=0.0,
         store_leaf_values=False,
         monotonic_cst=None,
+        pos_leaf_sum=None,
     ):
         super().__init__(
             criterion=criterion,
@@ -1221,6 +1233,7 @@ class DecisionTreeClassifier(ClassifierMixin, BaseDecisionTree):
             monotonic_cst=monotonic_cst,
             ccp_alpha=ccp_alpha,
             store_leaf_values=store_leaf_values,
+            pos_leaf_sum=pos_leaf_sum,
         )
 
     @_fit_context(prefer_skip_nested_validation=True)

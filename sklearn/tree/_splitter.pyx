@@ -151,6 +151,7 @@ cdef class Splitter(BaseSplitter):
         float64_t min_weight_leaf,
         object random_state,
         const int8_t[:] monotonic_cst,
+        intp_t pos_leaf_sum,
         *argv
     ):
         """
@@ -190,6 +191,7 @@ cdef class Splitter(BaseSplitter):
         self.random_state = random_state
         self.monotonic_cst = monotonic_cst
         self.with_monotonic_cst = monotonic_cst is not None
+        self.pos_leaf_sum = pos_leaf_sum
 
     def __reduce__(self):
         return (type(self), (self.criterion,
@@ -197,7 +199,9 @@ cdef class Splitter(BaseSplitter):
                              self.min_samples_leaf,
                              self.min_weight_leaf,
                              self.random_state,
-                             self.monotonic_cst.base if self.monotonic_cst is not None else None), self.__getstate__())
+                             self.monotonic_cst.base if self.monotonic_cst is not None else None),
+                             self.pos_leaf_sum,
+                             self.__getstate__())
 
     cdef int init(
         self,
