@@ -21,6 +21,7 @@ from cython cimport final
 from libc.math cimport isnan
 from libc.stdlib cimport qsort
 from libc.string cimport memcpy
+from libc.stdio cimport printf
 
 from ._criterion cimport Criterion
 from ._utils cimport log
@@ -192,6 +193,7 @@ cdef class Splitter(BaseSplitter):
         self.monotonic_cst = monotonic_cst
         self.with_monotonic_cst = monotonic_cst is not None
         self.pos_leaf_sum = pos_leaf_sum
+        self.curr_leaf_sum = 0
 
     def __reduce__(self):
         return (type(self), (self.criterion,
@@ -398,6 +400,8 @@ cdef class Splitter(BaseSplitter):
         if ((self.criterion.weighted_n_left < min_weight_leaf) or
                 (self.criterion.weighted_n_right < min_weight_leaf)):
             return 1
+
+        # Add if statement here using criterion stuff
 
         return 0
 
@@ -608,7 +612,10 @@ cdef inline intp_t node_split_best(
                 if splitter.check_presplit_conditions(&current_split, n_missing, missing_go_to_left) == 1:
                     continue
 
+                # printf("%d\n", len(samples))
+                # printf("n_left: %d, n_right: %d\n", n_left, n_right)
                 criterion.update(current_split.pos)
+                # TODO
 
                 # Reject if monotonicity constraints are not satisfied
                 if (

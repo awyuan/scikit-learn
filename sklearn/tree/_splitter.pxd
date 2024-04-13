@@ -61,6 +61,7 @@ cdef class BaseSplitter:
     cdef intp_t end                      # End position for the current node
 
     cdef const float64_t[:] sample_weight
+    cdef intp_t curr_leaf_sum            # Sum of the pos leaf values
 
     # The samples vector `samples` is maintained by the Splitter object such
     # that the samples contained in a node are contiguous. With this setting,
